@@ -5,16 +5,14 @@
       {
         "type": "command",
         "powershell": "& '.\\copilot-logger\\src\\session-log.ps1'",
-        "cwd": ".",
-        "timeoutSec": 10
+        "cwd": "."
       }
     ],
     "subagentStop": [
       {
         "type": "command",
         "powershell": "& '.\\copilot-logger\\src\\session-log.ps1'",
-        "cwd": ".",
-        "timeoutSec": 10
+        "cwd": "."
       }
     ]
   }

@@ -15,7 +15,9 @@ $scriptDir = Split-Path -Parent $PSCommandPath
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path -Path $scriptDir -ChildPath "..\..\.."))
 $logDir = Join-Path -Path $repoRoot -ChildPath "copilot-logs\$email"
 New-Item -ItemType Directory -Path $logDir -Force | Out-Null
-$logPath = Join-Path -Path $logDir -ChildPath "$sessionId.log"
+$date = Get-Date -Format "yyyy-MM-dd"
+$shortId = $sessionId.Split('-')[0]
+$logPath = Join-Path -Path $logDir -ChildPath "${date}_${shortId}.log"
 
 $lines = Get-Content -Path $transcriptPath -Encoding UTF8
 $entries = @()
@@ -58,5 +60,5 @@ foreach ($line in $lines) {
 }
 
 if ($entries.Count -gt 0) {
-    $entries -join "`n`n" | Set-Content -Path $logPath -Encoding UTF8
+    $entries -join "`n`n" | Set-Content -LiteralPath $logPath -Encoding UTF8
 }

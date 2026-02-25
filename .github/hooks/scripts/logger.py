@@ -106,7 +106,7 @@ def _collect_entries(events):
                 # Hold until completion so question and answer stay adjacent.
                 entry = f"{_stringify(_get_nested(evt, 'timestamp'))} [Agent]\n{question}"
                 if isinstance(choices, list) and choices:
-                    entry += f"\nChoices: {', '.join(str(choice) for choice in choices)}"
+                    entry += "\nChoices:\n" + "\n".join(f"  - {choice}" for choice in choices)
                 pending_ask_user[tool_call_id] = entry
         elif evt_type == "tool.execution_complete":
             tool_call_id = _stringify(_get_nested(evt, "data", "toolCallId")).strip()

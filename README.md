@@ -36,6 +36,10 @@ Copilot CLI automatically picks up the hooks when it finds `.github/hooks/copilo
 3. It parses the transcript for `user.message` events and `ask_user` tool interactions, extracting timestamps and content.
 4. It writes a log file to `copilot-logs/<git-user-email>/<date>_<session-short-id>.log`.
 
+## Error Reporting
+
+When hook execution fails, the scripts write a root-level `copilot-logger-error.log` file with actionable remediation steps (for example, missing `git user.email` or missing Python runtime). The file is overwritten on each new error so it always shows the latest failure.
+
 ## Log Format
 
 Logs are plain text with timestamped entries:

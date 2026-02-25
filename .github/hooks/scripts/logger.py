@@ -4,11 +4,13 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+# Change this to suit your needs
+COPILOT_LOGS_DIR = REPO_ROOT / "copilot-logs"
+
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = (SCRIPT_DIR / ".." / ".." / "..").resolve()
-COPILOT_LOGS_DIR = REPO_ROOT / "copilot-logs"
 ERROR_FILE = REPO_ROOT / "copilot-logger-error.log"
-
 
 def _get_nested(data, *keys):
     current = data
@@ -48,23 +50,22 @@ def _get_git_email():
             text=True,
         )
     except OSError:
-        _write_error_file("Git is not available in PATH. Install Git and run `git --version`.")
-        return ""
+        result = None
 
-    if result.returncode != 0:
-        stderr = result.stderr.strip().lower()
-        if "not a git repository" in stderr:
-            _write_error_file("Current directory is not a git repository. Ensure the hook runs from repo root.")
-        else:
-            _write_error_file("Could not read `git user.email`. Run `git config --get user.email` and fix the repo config.")
-        return ""
+    email = ""
+    if result is not None and result.returncode == 0:
+        email = result.stdout.strip()
 
-    email = result.stdout.strip()
     if not email:
         _write_error_file(
-            'Git email is not configured. Set it with `git config user.email "you@example.com"` '
-            'or `git config --global user.email "you@example.com"`.'
+            f"Failed to fetch email with `git config --get user.email`.\n"
+            "Possible causes:\n"
+            "- Git is not installed or not available in PATH.\n"
+            "- Current directory is not a Git repository.\n"
+            "- `user.email` is not configured."
         )
+        return ""
+
     return email
 
 

@@ -11,7 +11,8 @@ copilot-logger/
 │       ├── copilot-logger-cli.json      # Hook config for Copilot CLI
 │       ├── copilot-logger-vscode.json   # Hook config for Copilot in VS Code (empty/WIP)
 │       └── scripts/
-│           └── logger.ps1               # PowerShell script that parses transcripts into logs
+│           ├── logger.ps1               # PowerShell script that parses transcripts into logs
+│           └── logger.sh                # Bash script that parses transcripts into logs
 ├── copilot-logs/                        # Output directory for generated log files
 │   └── <user-email>/                    # Subdirectory per git user email
 │       └── <date>_<session-id>.log      # One log file per session
@@ -27,10 +28,11 @@ copilot-logger/
 Copilot CLI automatically picks up the hooks when it finds `.github/hooks/copilot-logger-cli.json` in the repo.
 
 **Note:** The hooks only take effect when you start a new chat session. Any session that was already running before installation will not produce logs.
+**Bash note:** `logger.sh` uses `jq` to parse transcript JSON.
 
 ## How It Works
 
-1. When a Copilot CLI agent or sub-agent finishes (`agentStop` / `subagentStop`), the hook fires `logger.ps1`.
+1. When a Copilot CLI agent or sub-agent finishes (`agentStop` / `subagentStop`), the hook fires `logger.ps1` (PowerShell) or `logger.sh` (Bash).
 2. The script receives the session ID and transcript path from Copilot via stdin (JSON).
 3. It parses the transcript for `user.message` events and `ask_user` tool interactions, extracting timestamps and content.
 4. It writes a log file to `copilot-logs/<git-user-email>/<date>_<session-short-id>.log`.

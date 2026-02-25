@@ -4,6 +4,7 @@
     "agentStop": [
       {
         "type": "command",
+        "bash": "bash './.github/hooks/scripts/logger.sh'",
         "powershell": "& '.\\.github\\hooks\\scripts\\logger.ps1'",
         "cwd": "."
       }
@@ -11,6 +12,7 @@
     "subagentStop": [
       {
         "type": "command",
+        "bash": "bash './.github/hooks/scripts/logger.sh'",
         "powershell": "& '.\\.github\\hooks\\scripts\\logger.ps1'",
         "cwd": "."
       }

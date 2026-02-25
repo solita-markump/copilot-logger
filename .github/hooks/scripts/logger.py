@@ -5,12 +5,12 @@ from datetime import datetime
 from pathlib import Path
 
 # Change this to suit your needs
-COPILOT_LOGS_DIR = REPO_ROOT / "copilot-logs"
+LOGS_DIR = "copilot-logs"
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = (SCRIPT_DIR / ".." / ".." / "..").resolve()
-ERROR_FILE = REPO_ROOT / "copilot-logger-error.log"
+FULL_LOGS_DIR = REPO_ROOT / LOGS_DIR
 
 def _get_nested(data, *keys):
     current = data
@@ -31,7 +31,9 @@ def _stringify(value):
 
 def _write_error_file(message):
     try:
-        ERROR_FILE.write_text(f"{_stringify(message).rstrip()}\n", encoding="utf-8")
+        (REPO_ROOT / "copilot-logger-error.log").write_text(
+            f"{_stringify(message).rstrip()}\n", encoding="utf-8"
+        )
     except OSError:
         pass
 
@@ -70,6 +72,7 @@ def _get_git_email():
 
 
 def _iter_transcript_events(transcript_file):
+    # Transcript is JSONL; skip empty/malformed lines.
     with transcript_file.open("r", encoding="utf-8") as handle:
         for raw_line in handle:
             line = raw_line.strip()
@@ -85,6 +88,7 @@ def _iter_transcript_events(transcript_file):
 
 def _collect_entries(events):
     entries = []
+    # ask_user prompts are split across start/complete events.
     pending_ask_user = {}
 
     for evt in events:
@@ -99,6 +103,7 @@ def _collect_entries(events):
             question = _stringify(_get_nested(evt, "data", "arguments", "question")).strip()
             choices = _get_nested(evt, "data", "arguments", "choices")
             if tool_call_id and question:
+                # Hold until completion so question and answer stay adjacent.
                 entry = f"{_stringify(_get_nested(evt, 'timestamp'))} [Agent]\n{question}"
                 if isinstance(choices, list) and choices:
                     entry += f"\nChoices: {', '.join(str(choice) for choice in choices)}"
@@ -137,13 +142,14 @@ def main():
     if not email:
         return 1
 
-    log_dir = COPILOT_LOGS_DIR / email
+    log_dir = FULL_LOGS_DIR / email
     try:
         log_dir.mkdir(parents=True, exist_ok=True)
     except OSError:
         return _fail(f"Could not create log directory: {log_dir}")
 
     date = datetime.now().strftime("%Y-%m-%d")
+    # Keep file names readable while still mapping to a session.
     short_id = str(session_id).split("-")[0]
     log_path = log_dir / f"{date}_{short_id}.log"
 

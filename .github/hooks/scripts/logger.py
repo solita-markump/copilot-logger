@@ -6,6 +6,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = (SCRIPT_DIR / ".." / ".." / "..").resolve()
+COPILOT_LOGS_DIR = REPO_ROOT / "copilot-logs"
 ERROR_FILE = REPO_ROOT / "copilot-logger-error.log"
 
 
@@ -121,7 +122,7 @@ def main():
     if not email:
         return 1
 
-    log_dir = REPO_ROOT / "copilot-logs" / email
+    log_dir = COPILOT_LOGS_DIR / email
     try:
         log_dir.mkdir(parents=True, exist_ok=True)
     except OSError:

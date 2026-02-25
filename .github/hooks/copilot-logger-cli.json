@@ -4,16 +4,16 @@
     "agentStop": [
       {
         "type": "command",
-        "bash": "if command -v python >/dev/null 2>&1; then python ./.github/hooks/scripts/logger.py; elif command -v python3 >/dev/null 2>&1; then python3 ./.github/hooks/scripts/logger.py; fi",
-        "powershell": "if (Get-Command python -ErrorAction SilentlyContinue) { python '.\\.github\\hooks\\scripts\\logger.py' } elseif (Get-Command python3 -ErrorAction SilentlyContinue) { python3 '.\\.github\\hooks\\scripts\\logger.py' }",
+        "bash": "./.github/hooks/scripts/log.sh",
+        "powershell": "& '.\\.github\\hooks\\scripts\\log.ps1'",
         "cwd": "."
       }
     ],
     "subagentStop": [
       {
         "type": "command",
-        "bash": "if command -v python >/dev/null 2>&1; then python ./.github/hooks/scripts/logger.py; elif command -v python3 >/dev/null 2>&1; then python3 ./.github/hooks/scripts/logger.py; fi",
-        "powershell": "if (Get-Command python -ErrorAction SilentlyContinue) { python '.\\.github\\hooks\\scripts\\logger.py' } elseif (Get-Command python3 -ErrorAction SilentlyContinue) { python3 '.\\.github\\hooks\\scripts\\logger.py' }",
+        "bash": "./.github/hooks/scripts/log.sh",
+        "powershell": "& '.\\.github\\hooks\\scripts\\log.ps1'",
         "cwd": "."
       }
     ]

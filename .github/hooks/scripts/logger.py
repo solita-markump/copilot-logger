@@ -1,10 +1,8 @@
 import json
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-
-USERNAME = "testing"
-
 
 def _get_nested(data, *keys):
     current = data
@@ -21,6 +19,19 @@ def _stringify(value):
     if isinstance(value, str):
         return value
     return str(value)
+
+
+def _get_git_email():
+    try:
+        result = subprocess.run(
+            ["git", "config", "--get", "user.email"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return ""
+    return result.stdout.strip()
 
 
 def main():
@@ -42,11 +53,13 @@ def main():
     if not transcript_file.exists():
         return 0
 
-    username = USERNAME
+    email = _get_git_email()
+    if not email:
+        return 0
 
     script_dir = Path(__file__).resolve().parent
     repo_root = (script_dir / ".." / ".." / "..").resolve()
-    log_dir = repo_root / "copilot-logs" / username
+    log_dir = repo_root / "copilot-logs" / email
     log_dir.mkdir(parents=True, exist_ok=True)
 
     date = datetime.now().strftime("%Y-%m-%d")

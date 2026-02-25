@@ -13,8 +13,7 @@ if (-not $email) { exit 0 }
 
 $scriptDir = Split-Path -Parent $PSCommandPath
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path -Path $scriptDir -ChildPath "..\..\.."))
-$projectRoot = Join-Path -Path $repoRoot -ChildPath "copilot-logger"
-$logDir = Join-Path -Path $projectRoot -ChildPath "logs\$email"
+$logDir = Join-Path -Path $repoRoot -ChildPath "copilot-logs\$email"
 New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 $logPath = Join-Path -Path $logDir -ChildPath "$sessionId.log"
 

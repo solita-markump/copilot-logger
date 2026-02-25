@@ -9,7 +9,7 @@ copilot-logger/
 ├── .github/
 │   └── hooks/
 │       ├── copilot-logger-cli.json      # Hook config for Copilot CLI
-│       └── scripts/
+│       └── copilot-logger/
 │           ├── logger.py                # Python script that parses transcripts into logs
 │           ├── run.ps1                  # PowerShell entry point (Windows)
 │           └── run.sh                   # Bash entry point (Linux/macOS)
@@ -22,7 +22,7 @@ copilot-logger/
 ## Installation
 
 1. Ensure Python is installed and available as `python` or `python3` on your PATH.
-2. Copy the `.github/hooks/` folder (including `scripts/`) into your target project's `.github/` directory.
+2. Copy the `.github/hooks/` folder (including `copilot-logger/`) into your target project's `.github/` directory.
 3. Commit to your repo.
 
 Copilot CLI automatically picks up the hooks when it finds `.github/hooks/copilot-logger-cli.json` in the repo.

@@ -1,7 +1,7 @@
 $scriptDir = Split-Path -Parent $PSCommandPath
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path -Path $scriptDir -ChildPath "..\..\.."))
 $errorPath = Join-Path -Path $repoRoot -ChildPath "copilot-logger-error.log"
-$loggerPath = Join-Path -Path $repoRoot -ChildPath ".github\hooks\scripts\logger.py"
+$loggerPath = Join-Path -Path $repoRoot -ChildPath ".github\hooks\copilot-logger\logger.py"
 
 if (Get-Command python -ErrorAction SilentlyContinue) {
     python $loggerPath

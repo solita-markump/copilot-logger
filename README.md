@@ -41,18 +41,18 @@ Copilot CLI automatically picks up the hooks when it finds `.github/hooks/copilo
 Logs are plain text with timestamped entries:
 
 ```
-2026-02-25T10:00:00Z [User]
-How do I add authentication?
+2026-02-25T12:52:35.042Z [User]
+Analyze the codebase. Is there any refactoring we can do?
 
-2026-02-25T10:00:05Z [Agent]
-What auth strategy should I use?
-Choices: 
-- JWT
-- Session-based
-- OAuth
+2026-02-25T12:54:18.521Z [Agent]
+Which refactoring focus should be first when we move to implementation?
+Choices:
+  - Parser tests + parser modularization (Recommended)
+  - Runner script deduplication first
+  - Balanced pass across both areas
 
-2026-02-25T10:00:10Z [User]
-JWT
+2026-02-25T12:55:39.641Z [User]
+User selected: Parser tests + parser modularization (Recommended)
 ```
 
 ## VS Code Support

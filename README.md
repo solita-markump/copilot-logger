@@ -1,4 +1,4 @@
-# copilot-logger
+# Copilot Logger
 
 Automatically saves Copilot chat transcripts as readable logs that get committed alongside your code. The main purpose is to make code reviews easier so reviewers can see exactly which prompts led to which code changes. Logs are organized by user email.
 

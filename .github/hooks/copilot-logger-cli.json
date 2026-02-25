@@ -4,14 +4,14 @@
     "agentStop": [
       {
         "type": "command",
-        "powershell": "& '.\\copilot-logger\\src\\session-log.ps1'",
+        "powershell": "& '.\\.github\\hooks\\scripts\\logger.ps1'",
         "cwd": "."
       }
     ],
     "subagentStop": [
       {
         "type": "command",
-        "powershell": "& '.\\copilot-logger\\src\\session-log.ps1'",
+        "powershell": "& '.\\.github\\hooks\\scripts\\logger.ps1'",
         "cwd": "."
       }
     ]

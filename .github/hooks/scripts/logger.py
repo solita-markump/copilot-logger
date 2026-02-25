@@ -41,6 +41,11 @@ def _write_error_file(problem, actions):
         pass
 
 
+def _fail(problem, actions):
+    _write_error_file(problem, actions)
+    return 1
+
+
 def _get_git_email():
     try:
         result = subprocess.run(
@@ -58,6 +63,28 @@ def _get_git_email():
             ],
         )
         return ""
+
+    if result.returncode != 0:
+        stderr = result.stderr.strip().lower()
+        if "not a git repository" in stderr:
+            _write_error_file(
+                "Current working directory is not a git repository.",
+                [
+                    "Run this hook from the repository root (hook config should set `cwd` to `.`).",
+                    "Verify a `.git` directory exists in the project root.",
+                ],
+            )
+        else:
+            _write_error_file(
+                "Could not read git user.email from repository configuration.",
+                [
+                    "Run `git config --get user.email` to inspect the current value.",
+                    'Set a repo email: `git config user.email "you@example.com"`.',
+                    "If Git returns an error, resolve repository/configuration issues and retry.",
+                ],
+            )
+        return ""
+
     email = result.stdout.strip()
     if not email:
         _write_error_file(
@@ -71,99 +98,25 @@ def _get_git_email():
     return email
 
 
-def main():
-    raw = sys.stdin.read()
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError:
-        _write_error_file(
-            "Hook input from Copilot is invalid JSON.",
-            [
-                "Restart the Copilot session and try again.",
-                "If this persists, verify hook configuration JSON is valid.",
-            ],
-        )
-        return 1
+def _iter_transcript_events(transcript_file):
+    with transcript_file.open("r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line:
+                continue
+            try:
+                evt = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(evt, dict):
+                yield evt
 
-    if not isinstance(payload, dict):
-        _write_error_file(
-            "Hook input has an unexpected format.",
-            [
-                "Restart the Copilot session.",
-                "Ensure the hook receives JSON object input from Copilot.",
-            ],
-        )
-        return 1
 
-    session_id = payload.get("sessionId")
-    transcript_path = payload.get("transcriptPath")
-    if not session_id or not transcript_path:
-        _write_error_file(
-            "Hook input is missing sessionId or transcriptPath.",
-            [
-                "Restart the Copilot session so hook payload is regenerated.",
-                "Confirm `.github/hooks/copilot-logger-cli.json` is being loaded.",
-            ],
-        )
-        return 1
-
-    transcript_file = Path(str(transcript_path))
-    if not transcript_file.exists():
-        _write_error_file(
-            f"Transcript file was not found: {transcript_file}",
-            [
-                "Restart the Copilot session and run another prompt.",
-                "Verify the transcript path is accessible from this machine.",
-            ],
-        )
-        return 1
-
-    email = _get_git_email()
-    if not email:
-        return 1
-
-    log_dir = COPILOT_LOGS_DIR / email
-    try:
-        log_dir.mkdir(parents=True, exist_ok=True)
-    except OSError:
-        _write_error_file(
-            f"Could not create log directory: {log_dir}",
-            [
-                "Create the folder manually and ensure write permissions are available.",
-                "Verify the repository directory is writable.",
-            ],
-        )
-        return 1
-
-    date = datetime.now().strftime("%Y-%m-%d")
-    short_id = str(session_id).split("-")[0]
-    log_path = log_dir / f"{date}_{short_id}.log"
-
+def _collect_entries(events):
     entries = []
     pending_ask_user = {}
 
-    try:
-        lines = transcript_file.read_text(encoding="utf-8").splitlines()
-    except OSError:
-        _write_error_file(
-            f"Could not read transcript file: {transcript_file}",
-            [
-                "Ensure the transcript file exists and is readable.",
-                "Restart Copilot and rerun your prompt.",
-            ],
-        )
-        return 1
-
-    for raw_line in lines:
-        line = raw_line.strip()
-        if not line:
-            continue
-
-        try:
-            evt = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-
+    for evt in events:
         evt_type = _get_nested(evt, "type")
         if evt_type == "user.message":
             content = _stringify(_get_nested(evt, "data", "content")).strip()
@@ -187,18 +140,94 @@ def main():
                 if answer:
                     entries.append(f"{_stringify(_get_nested(evt, 'timestamp'))} [User]\n{answer}")
 
+    return entries
+
+
+def main():
+    raw = sys.stdin.read()
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError:
+        return _fail(
+            "Hook input from Copilot is invalid JSON.",
+            [
+                "Restart the Copilot session and try again.",
+                "If this persists, verify hook configuration JSON is valid.",
+            ],
+        )
+
+    if not isinstance(payload, dict):
+        return _fail(
+            "Hook input has an unexpected format.",
+            [
+                "Restart the Copilot session.",
+                "Ensure the hook receives JSON object input from Copilot.",
+            ],
+        )
+
+    session_id = payload.get("sessionId")
+    transcript_path = payload.get("transcriptPath")
+    if not session_id or not transcript_path:
+        return _fail(
+            "Hook input is missing sessionId or transcriptPath.",
+            [
+                "Restart the Copilot session so hook payload is regenerated.",
+                "Confirm `.github/hooks/copilot-logger-cli.json` is being loaded.",
+            ],
+        )
+
+    transcript_file = Path(str(transcript_path))
+    if not transcript_file.exists():
+        return _fail(
+            f"Transcript file was not found: {transcript_file}",
+            [
+                "Restart the Copilot session and run another prompt.",
+                "Verify the transcript path is accessible from this machine.",
+            ],
+        )
+
+    email = _get_git_email()
+    if not email:
+        return 1
+
+    log_dir = COPILOT_LOGS_DIR / email
+    try:
+        log_dir.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return _fail(
+            f"Could not create log directory: {log_dir}",
+            [
+                "Create the folder manually and ensure write permissions are available.",
+                "Verify the repository directory is writable.",
+            ],
+        )
+
+    date = datetime.now().strftime("%Y-%m-%d")
+    short_id = str(session_id).split("-")[0]
+    log_path = log_dir / f"{date}_{short_id}.log"
+
+    try:
+        entries = _collect_entries(_iter_transcript_events(transcript_file))
+    except OSError:
+        return _fail(
+            f"Could not read transcript file: {transcript_file}",
+            [
+                "Ensure the transcript file exists and is readable.",
+                "Restart Copilot and rerun your prompt.",
+            ],
+        )
+
     if entries:
         try:
             log_path.write_text("\n\n".join(entries), encoding="utf-8")
         except OSError:
-            _write_error_file(
+            return _fail(
                 f"Could not write log file: {log_path}",
                 [
                     "Ensure `copilot-logs` is writable in this repository.",
                     "Retry after fixing file permissions.",
                 ],
             )
-            return 1
 
     return 0
 

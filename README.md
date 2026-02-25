@@ -51,8 +51,6 @@ Choices: JWT, Session-based, OAuth
 JWT
 ```
 
-## Requirements
+## VS Code Support
 
-- **PowerShell** (ships with Windows; available on macOS/Linux via [PowerShell Core](https://github.com/PowerShell/PowerShell))
-- **Git** (used to determine `user.email` for log directory naming)
-- **GitHub Copilot CLI** with hooks support
+VS Code support is not yet available. Copilot hooks are currently disabled in VS Code due to organization-level restrictions. Once those restrictions are lifted, VS Code support will be added.

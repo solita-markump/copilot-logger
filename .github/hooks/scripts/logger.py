@@ -27,22 +27,15 @@ def _stringify(value):
     return str(value)
 
 
-def _write_error_file(problem, actions):
-    lines = [
-        "Copilot logger hook failed.",
-        f"Problem: {problem}",
-        "",
-        "How to fix:",
-    ]
-    lines.extend(f"- {action}" for action in actions)
+def _write_error_file(message):
     try:
-        ERROR_FILE.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        ERROR_FILE.write_text(f"{_stringify(message).rstrip()}\n", encoding="utf-8")
     except OSError:
         pass
 
 
-def _fail(problem, actions):
-    _write_error_file(problem, actions)
+def _fail(message):
+    _write_error_file(message)
     return 1
 
 
@@ -55,45 +48,22 @@ def _get_git_email():
             text=True,
         )
     except OSError:
-        _write_error_file(
-            "The git command is not available.",
-            [
-                "Install Git and ensure `git` is available in PATH.",
-                "Run `git --version` in this repository to verify access.",
-            ],
-        )
+        _write_error_file("Git is not available in PATH. Install Git and run `git --version`.")
         return ""
 
     if result.returncode != 0:
         stderr = result.stderr.strip().lower()
         if "not a git repository" in stderr:
-            _write_error_file(
-                "Current working directory is not a git repository.",
-                [
-                    "Run this hook from the repository root (hook config should set `cwd` to `.`).",
-                    "Verify a `.git` directory exists in the project root.",
-                ],
-            )
+            _write_error_file("Current directory is not a git repository. Ensure the hook runs from repo root.")
         else:
-            _write_error_file(
-                "Could not read git user.email from repository configuration.",
-                [
-                    "Run `git config --get user.email` to inspect the current value.",
-                    'Set a repo email: `git config user.email "you@example.com"`.',
-                    "If Git returns an error, resolve repository/configuration issues and retry.",
-                ],
-            )
+            _write_error_file("Could not read `git user.email`. Run `git config --get user.email` and fix the repo config.")
         return ""
 
     email = result.stdout.strip()
     if not email:
         _write_error_file(
-            "Git email is not configured.",
-            [
-                'Set a repo email: `git config user.email "you@example.com"`.',
-                'Or set a global email: `git config --global user.email "you@example.com"`.',
-                "Run `git config --get user.email` to confirm.",
-            ],
+            'Git email is not configured. Set it with `git config user.email "you@example.com"` '
+            'or `git config --global user.email "you@example.com"`.'
         )
     return email
 
@@ -148,43 +118,19 @@ def main():
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError:
-        return _fail(
-            "Hook input from Copilot is invalid JSON.",
-            [
-                "Restart the Copilot session and try again.",
-                "If this persists, verify hook configuration JSON is valid.",
-            ],
-        )
+        return _fail("Hook input is invalid JSON.")
 
     if not isinstance(payload, dict):
-        return _fail(
-            "Hook input has an unexpected format.",
-            [
-                "Restart the Copilot session.",
-                "Ensure the hook receives JSON object input from Copilot.",
-            ],
-        )
+        return _fail("Hook input has an unexpected format (expected JSON object).")
 
     session_id = payload.get("sessionId")
     transcript_path = payload.get("transcriptPath")
     if not session_id or not transcript_path:
-        return _fail(
-            "Hook input is missing sessionId or transcriptPath.",
-            [
-                "Restart the Copilot session so hook payload is regenerated.",
-                "Confirm `.github/hooks/copilot-logger-cli.json` is being loaded.",
-            ],
-        )
+        return _fail("Hook input is missing `sessionId` or `transcriptPath`.")
 
     transcript_file = Path(str(transcript_path))
     if not transcript_file.exists():
-        return _fail(
-            f"Transcript file was not found: {transcript_file}",
-            [
-                "Restart the Copilot session and run another prompt.",
-                "Verify the transcript path is accessible from this machine.",
-            ],
-        )
+        return _fail(f"Transcript file not found: {transcript_file}")
 
     email = _get_git_email()
     if not email:
@@ -194,13 +140,7 @@ def main():
     try:
         log_dir.mkdir(parents=True, exist_ok=True)
     except OSError:
-        return _fail(
-            f"Could not create log directory: {log_dir}",
-            [
-                "Create the folder manually and ensure write permissions are available.",
-                "Verify the repository directory is writable.",
-            ],
-        )
+        return _fail(f"Could not create log directory: {log_dir}")
 
     date = datetime.now().strftime("%Y-%m-%d")
     short_id = str(session_id).split("-")[0]
@@ -209,25 +149,13 @@ def main():
     try:
         entries = _collect_entries(_iter_transcript_events(transcript_file))
     except OSError:
-        return _fail(
-            f"Could not read transcript file: {transcript_file}",
-            [
-                "Ensure the transcript file exists and is readable.",
-                "Restart Copilot and rerun your prompt.",
-            ],
-        )
+        return _fail(f"Could not read transcript file: {transcript_file}")
 
     if entries:
         try:
             log_path.write_text("\n\n".join(entries), encoding="utf-8")
         except OSError:
-            return _fail(
-                f"Could not write log file: {log_path}",
-                [
-                    "Ensure `copilot-logs` is writable in this repository.",
-                    "Retry after fixing file permissions.",
-                ],
-            )
+            return _fail(f"Could not write log file: {log_path}")
 
     return 0
 

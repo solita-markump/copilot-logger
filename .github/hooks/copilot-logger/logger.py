@@ -4,7 +4,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# Change this to suit your needs
+# Change this to suit your needs. Related to repo root.
 LOGS_DIR = "copilot-logs"
 
 

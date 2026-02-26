@@ -9,7 +9,7 @@
         "cwd": "./.github/hooks/copilot-logger"
       }
     ],
-    "Stop": [ // Vs code hook (not tested)
+    "Stop": [
       {
         "type": "command",
         "linux": "python ./logger.py || python3 ./logger.py || printf '%s\\n' 'Python not found in PATH.' > ../../../copilot-logger-error.log",

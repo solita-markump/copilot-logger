@@ -58,3 +58,7 @@ User selected: Parser tests + parser modularization (Recommended)
 ## VS Code Support
 
 VS Code support is included via the `Stop` hook in `hook.json`. However, this has not been tested due to organization-level restrictions that disable hooks in VS Code.
+
+**Naming note:** Hook event names are inconsistent between Copilot CLI and VS Code: `agentStop` vs `Stop`.
+- [Copilot CLI hook types](https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-hooks#types-of-hooks)
+- [VS Code Copilot hooks](https://code.visualstudio.com/docs/copilot/customization/hooks#_hook-lifecycle-events)

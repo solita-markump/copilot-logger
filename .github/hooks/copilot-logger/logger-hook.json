@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "hooks": {
+    "agentStop": [
+      {
+        "type": "command",
+        "bash": "python ./logger.py || python3 ./logger.py || printf '%s\\n' 'Python not found in PATH.' > ../../../copilot-logger-error.log",
+        "powershell": "python ./logger.py || python3 ./logger.py || ('Python not found in PATH.' | Set-Content -LiteralPath ../../../copilot-logger-error.log -Encoding UTF8)",
+        "cwd": "./.github/hooks/copilot-logger"
+      }
+    ],
+    "Stop": [ // Vs code hook (not tested)
+      {
+        "type": "command",
+        "linux": "python ./logger.py || python3 ./logger.py || printf '%s\\n' 'Python not found in PATH.' > ../../../copilot-logger-error.log",
+        "osx": "python ./logger.py || python3 ./logger.py || printf '%s\\n' 'Python not found in PATH.' > ../../../copilot-logger-error.log",
+        "windows": "python ./logger.py || python3 ./logger.py || ('Python not found in PATH.' | Set-Content -LiteralPath ../../../copilot-logger-error.log -Encoding UTF8)",
+        "cwd": "./.github/hooks/copilot-logger"
+      }
+    ]
+  }
+}

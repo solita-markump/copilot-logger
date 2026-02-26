@@ -2,6 +2,8 @@
 
 Automatically saves Copilot chat transcripts as readable logs that get committed alongside your code. The main purpose is to make code reviews easier so reviewers can see exactly which prompts led to which code changes. Logs are organized by user email.
 
+**Note:** Only works in GitHub Copilot CLI as hooks are currently disabled by organization policy in VS Code.
+
 ## File Structure
 
 ```

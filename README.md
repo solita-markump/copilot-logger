@@ -9,7 +9,7 @@ copilot-logger/
 ├── .github/
 │   └── hooks/
 │       └── copilot-logger/
-│           ├── logger-hook.json         # Hook config (Copilot CLI + VS Code)
+│           ├── hook.json                # Hook config (Copilot CLI + VS Code)
 │           └── logger.py                # Python script that parses transcripts into logs
 ├── copilot-logs/                        # Output directory for generated log files
 │   └── <user-email>/                    # Subdirectory per git user email
@@ -23,7 +23,7 @@ copilot-logger/
 2. Copy the `.github/hooks/copilot-logger/` folder into your target project's `.github/hooks/` directory.
 3. Commit to your repo.
 
-Copilot automatically picks up the hooks when it finds `.github/hooks/copilot-logger/logger-hook.json` in the repo.
+Copilot automatically picks up the hooks when it finds `.github/hooks/copilot-logger/hook.json` in the repo.
 
 **Note:** The hooks only take effect when you start a new chat session. Any session that was already running before installation will not produce logs.
 
@@ -55,4 +55,4 @@ User selected: Parser tests + parser modularization (Recommended)
 
 ## VS Code Support
 
-VS Code support is included via the `Stop` hook in `logger-hook.json`. However, this has not been tested due to organization-level restrictions that disable hooks in VS Code.
+VS Code support is included via the `Stop` hook in `hook.json`. However, this has not been tested due to organization-level restrictions that disable hooks in VS Code.
